@@ -8,20 +8,22 @@ const App = () => {
   const [completed, setCompleted] = useState(false);
 
   const handleSizeChange = (e) => {
-    setSize(parseInt(e.target.value));
+    const newSize = parseInt(e.target.value);
+    if (newSize >= 3 && newSize <= 5) {
+      setSize(newSize);
+    }
   };
-
-  const shufflePieces = (array, size) => {
-    // 셔플 전에 퍼즐 완성 상태 초기화
+  
+  const shufflePieces = (originalArray, size) => {
     setCompleted(false);
 
+    let array = [...originalArray];
     let emptyPieceIndex = size * size - 1;
     array[emptyPieceIndex] = null;
     setEmptyIndex(emptyPieceIndex);
 
-    // 2x2 퍼즐의 경우 특별한 셔플 로직을 적용
+    // 셔플 로직 (2x2 퍼즐 포함)
     if (size === 2) {
-      // 임의의 셔플 로직 적용 (예: 첫 번째와 두 번째 조각을 교환)
       [array[0], array[1]] = [array[1], array[0]];
     } else {
       for (let i = array.length - 2; i > 0; i--) {
@@ -86,18 +88,17 @@ const App = () => {
 
   const handlePieceClick = (index) => {
     if (canMove(index)) {
-      const newPieces = [...pieces];
+      let newPieces = [...pieces];
       [newPieces[emptyIndex], newPieces[index]] = [newPieces[index], newPieces[emptyIndex]];
-      setPieces(newPieces);
       setEmptyIndex(index);
+      setPieces(newPieces);
       checkCompletion(newPieces);
     }
   };
 
-  const checkCompletion = () => {
-    // 각 조각이 원래 위치에 있는지 확인
-    const isCompleted = pieces.every((piece, index) => {
-      return piece === null || piece.currentPosition === index;
+  const checkCompletion = (newPieces) => {
+    const isCompleted = newPieces.every((piece, index) => {
+      return piece === null || piece.originalIndex === index;
     });
     setCompleted(isCompleted);
   };
@@ -108,7 +109,7 @@ const App = () => {
       <div>
         <label>
           퍼즐 크기 (NxN): 
-          <input type="number" value={size} onChange={handleSizeChange} min="2" max="10" />
+          <input type="number" value={size} onChange={handleSizeChange} min="3" max="5" />
         </label>
       </div>
       <ImageUpload onImageUpload={handleImageUpload} />
